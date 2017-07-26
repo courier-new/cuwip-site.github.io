@@ -1,0 +1,117 @@
+.columns {
+	display: flex;
+	justify-content: center;
+	&.three {
+		@include respond-to('at1000') {
+			flex-direction: column;
+		}
+		align-items: flex-start;
+		.column {
+			@include respond-to('xlarge') {
+				padding: 2em 2em 1em 2em;
+				width: 33%;
+			}
+			@include respond-to('at1000') {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+			}
+			@include respond-to('at500') {
+				display: block;
+			}
+			@include respond-to('at400') {
+				padding: 2em 0 1em 0;
+			}
+			.text.block {
+				@include respond-to('at1000') {
+					text-align: left;
+					h2,
+					p {
+						margin: 0.2em;
+					}
+				}
+				@include respond-to('at500') {
+					text-align: center;
+					h2 {
+						font-size: 2em;
+						margin: 1.2em 0 1em 0;
+					}
+				}
+			}
+			img {
+				@include respond-to('xlarge') {
+					margin: 0 auto 1em auto;
+					width: 50%;
+				}
+				@include respond-to('at1000') {
+					height: 100px;
+					margin: 0 2em 0 0.5em;
+					width: 100px;
+				}
+				@include respond-to('at500') {
+					height: auto;
+					margin: 0;
+					width: 40%;
+				}
+			}
+		}
+	}
+	&.two {
+		@include respond-to('at500') {
+			flex-direction: column;
+		}
+		align-items: center;
+		.column {
+			@include respond-to('xlarge') {
+				padding: 0 3em;
+			}
+			@include respond-to('at1000') {
+				padding: 0 2em;
+			}
+			&:first-child {
+				@include respond-to('xlarge') {
+					text-align: right;
+					border-right: 1px solid $grey-medium;
+					width: 30%;
+				}
+				@include respond-to('at1000') {
+					padding-left: 0.5em;
+				}
+				@include respond-to('at700') {
+					width: 36%;
+				}
+				@include respond-to('at500') {
+					padding: 0;
+					text-align: center;
+					border: none;
+					width: 95%;
+				}
+			}
+			&:last-child {
+				@include respond-to('xlarge') {
+					text-align: left;
+					width: 70%;
+				}
+				@include respond-to('at700') {
+					padding-right: 1em;
+				}
+				@include respond-to('at500') {
+					padding: 0;
+					text-align: center;
+					width: 95%;
+				}
+			}
+			ul {
+				list-style: none;
+				padding-left: 0;
+				li {
+					@include respond-to('at500') {
+						font-size: 1.2em;
+					}
+					margin-bottom: 1em;
+				}
+			}
+		}
+	}
+}

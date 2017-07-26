@@ -1,0 +1,29 @@
+.page.footer {
+	@include respond-to('xlarge') {
+		font-size: 0.7em;
+		padding: 3em 15%;
+	}
+	@include respond-to('at1400') {
+		padding: 3em 10%;
+	}
+	@include respond-to('at1000') {
+		padding: 3em 2em;
+	}
+	@include respond-to('at500') {
+		font-size: 0.6em;
+	}
+	background: lighten($grey-dark, 5%);
+	color: $grey-medium;
+	text-align: center;
+	transition: padding 0.5s;
+	&.mobile {
+		padding-bottom: $mobile-nav + 2vh;
+	}
+	a {
+		color: $green-grass;
+	}
+	a:hover,
+	a:active {
+		color: $green-grass-light;
+	}
+}
