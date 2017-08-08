@@ -113,17 +113,22 @@ p,
 			text-align: left;
 		}
 	}
-	&.about.travel {
+	&.about.travel,
+	&.about.faq {
 		@include respond-to('min1000') {
 			padding-left: 15em;
 		}
-		span.address {
+		span.address,
+		span.template {
 			background: white;
 			display: block;
 			padding: 1em 1.5em;
 			line-height: 1.5em;
 			margin: 2em;
 			max-width: 300px;
+		}
+		span.template {
+			max-width: 90%;
 		}
 		img {
 			@include respond-to('min700') {
@@ -231,7 +236,7 @@ p,
 		text-align: center;
 		&.hiding.container {
 			overflow: hidden;
-			height: 100vh; /* height set dynamically by scroll-effect.js */
+			height: auto; /* height set dynamically by scroll-effect.js */
 			& > .text.block {
 				margin-bottom: 10px;
 			}
@@ -540,10 +545,11 @@ p,
 		ul.organizers.list {
 			@include respond-to('xlarge') {
 				flex-direction: row;
+				margin: 0 0 1em 0;
 				width: 100%;
 			}
 			@include respond-to('at700') {
-				margin: 0 10%;
+				margin: 0 10% 1em 10%;
 				flex-direction: column;
 				width: 80%;
 			}
@@ -552,7 +558,6 @@ p,
 			display: flex;
 			justify-content: space-between;
 			padding: 0;
-			margin: 0;
 			li {
 				@include respond-to('xlarge') {
 					width: 31%;
@@ -569,7 +574,7 @@ p,
 				}
 				img {
 					@include respond-to('xlarge') {
-						margin: 2.3em 30%;
+						margin: 1em 30% 2.3em 30%;
 						width: 40%;
 					}
 					@include respond-to('at700') {
