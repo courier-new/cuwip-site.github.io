@@ -5,15 +5,19 @@
  *
  * @author    Kelli Rockwell <kellirockwell@mail.com>
  * @since     File available since July 23, 2017
- * @version   1.0.0
+ * @version   1.0.2
  */
 
 // Variable for storing all of the application information pieces retrieved from json
-let appData;
+let appData = {infoblocks: Array(0)};
 
 $.getJSON('/js/apply.json', function(data) {
    appData = data;
 	addAppInfo();
+	// If there is a submenu, set initial submenuLocation
+	if ($('.sub.menu').length) {
+		$submenuLocation = $('.sub.menu').offset().top - parseFloat($('.sub.menu').css('padding-top'));
+	}
 	windowListener();
 });
 
@@ -123,6 +127,31 @@ function addAppInfo() {
 					// If current time is after registration closes
 					output = getTimeUntil(registerClose) < 0 ? curr.after.text : output;
 					$mesLoc.html(output);
+				}
+			}
+			// For poster message
+			if (curr.dataPlace === 'posters') {
+				// Identify posters alert box
+				let $alertBox = $('.alert.message');
+				// If alert box configured for poster info exists
+				if ($alertBox.length && $alertBox.data("place") === 'poster-info') {
+					// Variable to hold alert message content
+					let output = "<strong>";
+					// Variable to remember appropriate section of time data
+					let mes = "";
+					// If current time is before application opens
+					mes = getTimeUntil(applyOpen) > 0 ? curr.before : mes;
+					// If current time is after application opens and before application closes
+					mes = (getTimeUntil(applyOpen) < 0 && getTimeUntil(applyClose) > 0) ? curr.applyPeriod : mes;
+					// If current time is after application closes and before registration opens
+					mes = (getTimeUntil(applyClose) < 0 && getTimeUntil(registerOpen) > 0) ? curr.reviewPeriod : mes;
+					// If current time is after registration opens and before registration closes
+				 	mes = (getTimeUntil(registerOpen) < 0 && getTimeUntil(registerClose) > 0) ? curr.registerPeriod : mes;
+					// If current time is after registration closes
+					mes = getTimeUntil(registerClose) < 0 ? curr.after : mes;
+					output += mes.header + "</strong>\n";
+					output += "<p>\n" + mes.text + "\n</p>\n";
+					$alertBox.html(output);
 				}
 			}
 	   });
