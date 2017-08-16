@@ -18,6 +18,7 @@
 // @prepros-append countdown.js
 // @prepros-append apply.js
 // @prepros-append device.js
+// @prepros-append test-date.js
 // @prepros-append end.js
 
 // Outer wrapper
@@ -42,6 +43,8 @@
 	var registerClose = '17 November 2017 23:59:00 PST';
 	// Set date/time of event in this format
 	var startOfCUWiP = '12 January 2018 18:00:00 PDT';
+	// Variable for holding test date
+	var testDate = void 0;
 
 	// Identify main navigation menu
 	var $nav = $('nav.main.menu');
@@ -437,7 +440,7 @@
   *
   * @author    Kelli Rockwell <kellirockwell@mail.com>
   * @since     File available since July 23, 2017
-  * @version   1.0.2
+  * @version   1.1.0
   */
 
 	// Variable for storing all of the application information pieces retrieved from json
@@ -457,10 +460,8 @@
 		readable = readable || false;
 		// Compute seconds from since midnight January 1st 1970 to input time
 		var endTime = Date.parse(t) / 1e3;
-		// Compute seconds from since midnight January 1st 1970 to current time
-		var currentTime = Math.floor(new Date().getTime() / 1e3);
-		// Test other dates here
-		// currentTime = Date.parse("10-12-2017 23:00:00") / 1e3;
+		// Compute seconds from since midnight January 1st 1970 to current time, unless test date is specified
+		var currentTime = testDate ? testDate : Math.floor(new Date().getTime() / 1e3);
 		// Compute seconds between now and event time
 		var seconds = void 0,
 		    result = void 0;
@@ -488,103 +489,93 @@
 				addAppInfo();
 			}, 50);
 		} else {
+			// Print what testDate is, if it is going to be used
+			if (testDate) {
+				console.log("test date used: " + testDate);
+			}
+			// Variable to record current stage of application process
+			// Key:
+			// Bad value                              | -100
+			// Before application opens               |   -1
+			// During application period              |    0
+			// After application, before registration |    1
+			// During registration period             |    2
+			// After registration (last stage)        |    3
+			var stage = -100;
+			// (-1) If current time is before application opens
+			stage = getTimeUntil(applyOpen) > 0 ? -1 : stage;
+			// (0) If current time is after application opens and before application closes = during application period
+			stage = getTimeUntil(applyOpen) < 0 && getTimeUntil(applyClose) > 0 ? 0 : stage;
+			// (1) If current time is after application closes and before registration opens
+			stage = getTimeUntil(applyClose) < 0 && getTimeUntil(registerOpen) > 0 ? 1 : stage;
+			// (2) If current time is after registration opens and before registration closes = during registration period
+			stage = getTimeUntil(registerOpen) < 0 && getTimeUntil(registerClose) > 0 ? 2 : stage;
+			// (3) If current time is after registration closes
+			stage = getTimeUntil(registerClose) < 0 ? 3 : stage;
+
 			$(appData.infoblocks).each(function () {
 				var curr = $(this)[0];
-				// For alert message
-				if (curr.dataPlace === 'alert') {
+				// Variable to remember appropriate section of time data
+				var mes = void 0;
+				// Use current stage value to identify appropriate section
+				switch (stage) {
+					case -1:
+						// Before application opens
+						mes = curr.before;
+						break;
+					case 0:
+						// During application period
+						mes = curr.applyPeriod;
+						break;
+					case 1:
+						// After application, before registration
+						mes = curr.reviewPeriod;
+						break;
+					case 2:
+						// During registration period
+						mes = curr.registerPeriod;
+						break;
+					case 3:
+						// After registration closes
+						mes = curr.after;
+						break;
+					default:
+						// Bad date calculation
+						console.log("bad date");
+						// Default to before block
+						mes = curr.before;
+				}
+				// For general application and postre alert messages
+				if (curr.dataPlace === 'alert' || curr.dataPlace === 'posters') {
 					// Identify alert box
 					var $alertBox = $('.alert.message');
 					// If alert box configured for application info exists
-					if ($alertBox.length && $alertBox.data("place") === 'app-info') {
+					if ($alertBox.length && $alertBox.hasClass(curr.dataPlace) && $alertBox.data("place") === 'app-info') {
 						// Variable to hold alert message content
 						var output = "<strong>";
-						// Variable to remember appropriate section of time data
-						var mes = "";
-						// If current time is before application opens
-						mes = getTimeUntil(applyOpen) > 0 ? curr.before : mes;
-						// If current time is after application opens and before application closes
-						mes = getTimeUntil(applyOpen) < 0 && getTimeUntil(applyClose) > 0 ? curr.applyPeriod : mes;
-						// If current time is after application closes and before registration opens
-						mes = getTimeUntil(applyClose) < 0 && getTimeUntil(registerOpen) > 0 ? curr.reviewPeriod : mes;
-						// If current time is after registration opens and before registration closes
-						mes = getTimeUntil(registerOpen) < 0 && getTimeUntil(registerClose) > 0 ? curr.registerPeriod : mes;
-						// If current time is after registration closes
-						mes = getTimeUntil(registerClose) < 0 ? curr.after : mes;
 						output += mes.header + "</strong>\n";
 						output += "<p>\n" + mes.text + "\n</p>\n";
 						$alertBox.html(output);
 						// If current time is after application opens and before application closes
-						if (getTimeUntil(applyOpen) < 0 && getTimeUntil(applyClose) > 0) {
+						if (stage == 0) {
 							// Set up application deadline countdown
 							$('.time.until.close').html(getTimeUntil(applyClose, true));
 						}
 					}
 				}
-				// For closing message
-				if (curr.dataPlace === 'closing') {
-					// Identify closing message location
-					var $mesLoc = $('.closing');
+				// For closing message (index.html, after countdown) and about application message (/apply, "What do I do now?")
+				if (curr.dataPlace === 'closing' || curr.dataPlace === 'about app') {
+					// Form class name from dataPlace by splitting at spaces and adding dots before each
+					var className = "";
+					$(curr.dataPlace.split(" ")).each(function () {
+						className += "." + this;
+					});
+					// Identify closing message location based on className
+					var $mesLoc = $(className);
 					// If message box configured for application info exists
 					if ($mesLoc.length && $mesLoc.data("place") === 'app-info') {
-						// Variable to hold alert message content
-						var _output = "";
-						// If current time is before application opens
-						_output = getTimeUntil(applyOpen) > 0 ? curr.before.text : _output;
-						// If current time is after application opens and before application closes
-						_output = getTimeUntil(applyOpen) < 0 && getTimeUntil(applyClose) > 0 ? curr.applyPeriod.text : _output;
-						// If current time is after application closes and before registration opens
-						_output = getTimeUntil(applyClose) < 0 && getTimeUntil(registerOpen) > 0 ? curr.reviewPeriod.text : _output;
-						// If current time is after registration opens and before registration closes
-						_output = getTimeUntil(registerOpen) < 0 && getTimeUntil(registerClose) > 0 ? curr.registerPeriod.text : _output;
-						// If current time is after registration closes
-						_output = getTimeUntil(registerClose) < 0 ? curr.after.text : _output;
-						$mesLoc.html(_output);
-					}
-				}
-				// For about application message
-				if (curr.dataPlace === 'about') {
-					// Identify about application message location
-					var _$mesLoc = $('.about.app');
-					// If message box configured for application info exists
-					if (_$mesLoc.length && _$mesLoc.data("place") === 'app-info') {
-						// Variable to hold alert message content
-						var _output2 = "";
-						// If current time is before application opens
-						_output2 = getTimeUntil(applyOpen) > 0 ? curr.before.text : _output2;
-						// If current time is after application opens and before application closes
-						_output2 = getTimeUntil(applyOpen) < 0 && getTimeUntil(applyClose) > 0 ? curr.applyPeriod.text : _output2;
-						// If current time is after application closes and before registration opens
-						_output2 = getTimeUntil(applyClose) < 0 && getTimeUntil(registerOpen) > 0 ? curr.reviewPeriod.text : _output2;
-						// If current time is after registration opens and before registration closes
-						_output2 = getTimeUntil(registerOpen) < 0 && getTimeUntil(registerClose) > 0 ? curr.registerPeriod.text : _output2;
-						// If current time is after registration closes
-						_output2 = getTimeUntil(registerClose) < 0 ? curr.after.text : _output2;
-						_$mesLoc.html(_output2);
-					}
-				}
-				// For poster message
-				if (curr.dataPlace === 'posters') {
-					// Identify posters alert box
-					var _$alertBox = $('.alert.message');
-					// If alert box configured for poster info exists
-					if (_$alertBox.length && _$alertBox.data("place") === 'poster-info') {
-						// Variable to hold alert message content
-						var _output3 = "<strong>";
-						// Variable to remember appropriate section of time data
-						var _mes = "";
-						// If current time is before application opens
-						_mes = getTimeUntil(applyOpen) > 0 ? curr.before : _mes;
-						// If current time is after application opens and before application closes
-						_mes = getTimeUntil(applyOpen) < 0 && getTimeUntil(applyClose) > 0 ? curr.applyPeriod : _mes;
-						// If current time is after application closes and before registration opens
-						_mes = getTimeUntil(applyClose) < 0 && getTimeUntil(registerOpen) > 0 ? curr.reviewPeriod : _mes;
-						// If current time is after registration opens and before registration closes
-						_mes = getTimeUntil(registerOpen) < 0 && getTimeUntil(registerClose) > 0 ? curr.registerPeriod : _mes;
-						// If current time is after registration closes
-						_mes = getTimeUntil(registerClose) < 0 ? curr.after : _mes;
-						_output3 += _mes.header + "</strong>\n";
-						_output3 += "<p>\n" + _mes.text + "\n</p>\n";
-						_$alertBox.html(_output3);
+						// Fill in appropriate text
+						$mesLoc.html(mes.text);
 					}
 				}
 			});
@@ -606,4 +597,92 @@
 		}
 		$(this).html(word);
 	});
+
+	/**
+  * test-date.js
+  *
+  * Allows input of a custom date for testing period-sensitive content
+  *
+  * @author    Kelli Rockwell <kellirockwell@mail.com>
+  * @since     File available since August 16, 2017
+  * @version   1.0.0
+  */
+
+	// Add a button to open test date module on double click of footer
+	$('.page.footer').on('dblclick', function () {
+		// If window is not mobile size
+		if ($(window).width() > 700) {
+			if (!$('.test.date.trigger').length) {
+				var trigger = "<div class='test date trigger' style='background: rgba(255, 255, 255, 0.1); position: absolute; bottom: 0; right: 0; width: 100px; height: 50px; z-index: 200;'></div>";
+				$(this).prepend(trigger);
+			} else {
+				$('.test.date.trigger').remove();
+			}
+		}
+	});
+
+	// Add test date changing module on click of button
+	$('.page.footer').on('click', '.test.date.trigger', function () {
+		if (!$('.test.date.module').length) {
+			console.log('opening test date module');
+			var module = "<div class='module container'>\n<div class='test date module'>\n<div class='text'>\n";
+			module += "<div class='input bar'><input type='text'></input><div class='go button'>Try</div><div class='reset button'>Reset</div></div>\n";
+			module += "Recommended input format is<strong>17 November 2017 23:59:00 PST</strong>\n</div>\n</div>\n</div>";
+			$('body').prepend(module);
+			$('.test.date.module input').focus();
+		} else {
+			console.log('closing test date module');
+			$('.module.container').remove();
+		}
+	});
+
+	// Apply new test date on click of go button
+	$('body').on('click', '.test.date.module .go.button', function () {
+		// Try to parse date
+		var input = Date.parse($('.test.date.module input').val()) / 1e3;
+		if (!input) {
+			console.log('could not parse date from input');
+		}
+		// Set date and reload content
+		testDate = input;
+		addAppInfo();
+	});
+
+	// Reset to current date on click of reset button
+	$('body').on('click', '.test.date.module .reset.button', function () {
+		// Reset date and reload content
+		testDate = null;
+		addAppInfo();
+	});
+
+	// Close test date changing module on click of anywhere outside of it
+	$('body').on('click', '.module.container', function (e) {
+		e = e || window.event;
+		// If module is present and click is not on it
+		if ($('.test.date.module').length && !$(e.target).closest('.test.date.module').length) {
+			console.log('closing test date module');
+			$('.module.container').remove();
+		}
+	});
+
+	// Close test date changing module on press of escape button
+	document.onkeydown = function (e) {
+		e = e || window.event;
+		// Boolean for remembering if key pressed is escape key or not
+		var isEscape = false;
+		if ("key" in e) {
+			// Newer browsers
+			isEscape = e.key == "Escape" || e.key == "Esc";
+		} else {
+			// Older browsers
+			isEscape = e.keyCode == 27;
+		}
+		// If module is present and keypress of escape
+		if ($('.test.date.module').length && isEscape) {
+			console.log('closing test date module');
+			$('.module.container').remove();
+		}
+	};
+
+	/* End of test-date.js */
 })();
