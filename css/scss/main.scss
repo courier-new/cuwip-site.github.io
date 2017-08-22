@@ -50,7 +50,7 @@ a:active {
 p,
 .message {
 	line-height: 1.5em;
-	margin: 2em 0;
+	margin: 1.8em 0;
 }
 
 .page {
@@ -95,12 +95,14 @@ p,
 			padding-right: 5em;
 		}
 		@include respond-to('at1000') {
-			padding-left: 2em;
-			padding-right: 2em;
+			padding: 2.8em 2em 1.5em 2em;
 		}
 		@include respond-to('at700') {
 			padding-left: 0.5em;
 			padding-right: 0.5em;
+		}
+		@include respond-to('at500') {
+			padding: 2em 0.5em 0.8em 0.5em;
 		}
 		padding-top: 2.8em;
 		padding-bottom: 2em;
@@ -322,6 +324,29 @@ p,
 				text-align: left;
 			}
 			margin: 0;
+		}
+		.apply.button {
+			@include respond-to('at700') {
+				margin-top: -0.3em;
+			}
+			background-color: rgba($pink-salmon, 0.9);
+			border-radius: 3em;
+			box-sizing: border-box;
+			color: $grey-lightest;
+			cursor: pointer;
+			display: block;
+			font-size: 1.1em;
+			text-align: center;
+			padding: 0.6em;
+			margin: 0 auto 0.5em auto;
+			max-width: 250px;
+			min-width: 200px;
+			width: 70%;
+			text-transform: uppercase;
+			transition: background 0.3s;
+			&:hover {
+				background-color: rgba($pink-berry, 1);
+			}
 		}
 		&.alert::after {
 			border-color: lighten($pink-berry, 10%);
@@ -622,12 +647,12 @@ p,
 			height: 50px;
 		}
 		@include respond-to('at1000') {
-			height: 80px;
-		}
-		@include respond-to('at500') {
 			height: 60px;
 		}
-		margin: 1em auto;
+		@include respond-to('at500') {
+			height: 50px;
+		}
+		margin: 0 auto 1em auto;
 	}
 }
 
