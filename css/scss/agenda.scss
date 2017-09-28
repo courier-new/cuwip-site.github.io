@@ -1,16 +1,19 @@
 // Map of Event types, colors, and readable labels
 $event-attrs: (
-	food      : ($green-lime, "Food"),
-	misc      : ($turquoise-light, "Misc/Special"),
-	talk      : ($pink-salmon, "Talk"),
-	breakout  : ($green-grass-light, "Breakout Session"),
-	free      : ($pink-berry, "Free Time"),
-	logistics : ($gold-light, "Logistics"),
-	panel     : ($blue-light, "Panel"),
-	shuttle   : ($grey-light, "Shuttle Run")
+	food      : ($green-lime, 'Food'),
+	misc      : ($turquoise-light, 'Misc/Special'),
+	talk      : ($pink-salmon, 'Talk'),
+	breakout  : ($green-grass-light, 'Breakout Session'),
+	free      : ($pink-berry, 'Free Time'),
+	logistics : ($gold-light, 'Logistics'),
+	panel     : ($blue-light, 'Panel'),
+	shuttle   : ($grey-light, 'Shuttle Run')
 );
 
 .page.about.agenda .inner > .text.block {
+	&.agenda.spread {
+		padding-bottom: 2em;
+	}
 	h1 {
 		margin-bottom: 0;
 	}
@@ -29,17 +32,17 @@ $event-attrs: (
 			padding: 4px;
 		}
 		span {
-			border: 5px solid $turquoise-medium;
-			border-radius: 50%;
-			display: inline-block;
-			position: relative;
-			margin: 0 5px;
 			// Fill in border-color for each event type
 			@each $type, $attrs in $event-attrs {
 				&.#{$type} {
 					border-color: nth($attrs, 1);
 				}
 			}
+			border: 5px solid $turquoise-medium;
+			border-radius: 50%;
+			display: inline-block;
+			position: relative;
+			margin: 0 5px;
 		}
 	}
 	.campus.reference {
@@ -54,7 +57,7 @@ $event-attrs: (
 	.day.table {
 		display: flex;
 		flex-direction: column;
-		& > .event {
+		> .event {
 			align-items: center;
 			display: flex;
 			flex-wrap: wrap;
@@ -73,12 +76,6 @@ $event-attrs: (
 				text-align: center;
 				position: relative;
 				span {
-					border: 7px solid $turquoise-medium;
-					border-radius: 50%;
-					display: inline-block;
-					position: relative;
-					width: 0;
-					height: 0.5em;
 					// Fill in border-color and tool-tip box for each event type
 					@each $type, $attrs in $event-attrs {
 						&.#{$type} {
@@ -89,11 +86,17 @@ $event-attrs: (
 							}
 						}
 					}
+					border: 7px solid $turquoise-medium;
+					border-radius: 50%;
+					display: inline-block;
+					position: relative;
+					width: 0;
+					height: 0.5em;
 					&::after,
 					&:hover::after,
 					&.focused::after {
 						box-sizing: border-box;
-						color: white;
+						color: #fff;
 						display: block;
 						opacity: 0;
 						overflow: hidden;
@@ -192,7 +195,7 @@ $event-attrs: (
 					width: 86%;
 				}
 				@include respond-to('at500') {
-					margin: 0.2em 7% 0.5em 7%;
+					margin: 0.2em 7% 0.5em;
 				}
 				display: flex;
 				flex-wrap: wrap;
@@ -214,7 +217,7 @@ $event-attrs: (
 					h2 {
 						color: map-get($event-attrs, talk);
 						font-size: 1em;
-						margin: 1.5em 0 1em 0;
+						margin: 1.5em 0 1em;
 						em {
 							@include respond-to('at500') {
 								display: block;
@@ -229,7 +232,7 @@ $event-attrs: (
 							margin: 1em 0;
 						}
 						@include respond-to('at500') {
-							margin: 1em 0 0 0;
+							margin: 1em 0 0;
 						}
 					}
 				}
