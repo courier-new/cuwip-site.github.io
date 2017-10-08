@@ -2,35 +2,64 @@
 	"breakouts": {
 		"ppe1": {
 			"name": "Equity and Inclusion in STEM",
-			"special": "Panel A Extension"
+			"special": "Panel A Extension",
+			"sessions": [1, 2, 3]
 		},
 		"ppe2": {
 			"name": "Balancing Career/&#8203;Life",
-			"special": "Panel B Extension"
+			"special": "Panel B Extension",
+			"sessions": [2, 3]
 		},
 		"sj": {
 			"name": "Free Radicals: Intersection of Science/&#8203;Social Justice",
-			"special": "Only Offered Once"
+			"special": "Only Offered Once",
+			"sessions": [2]
 		},
 		"is": {
 			"name" : "Imposter Syndrome: Do you feel like you belong?",
-			"special": "Only Offered Once"
+			"special": "Only Offered Once",
+			"sessions": [3]
 		},
 		"sf": {
-			"name": "Science Frontiers/&#8203;Research Fields"
+			"name": "Science Frontiers/&#8203;Research Fields",
+			"sessions": [1, 2, 3]
 		},
 		"outreach": {
-			"name": "Science Outreach"
+			"name": "Science Outreach",
+			"sessions": [1, 2]
 		},
 		"wip": {
-			"name": "Starting/&#8203;Revitalizing a WIP group @ your home institution"
+			"name": "Starting/&#8203;Revitalizing a WIP group @ your home institution",
+			"sessions": [1, 3]
 		},
 		"cc": {
 			"name": "Transitioning from Community College to a 4-year Institution",
-			"special": "Only Offered Once"
+			"special": "Only Offered Once",
+			"sessions": [1]
 		},
 		"jpl": {
-			"name": "REUs/&#8203;Internships, featuring JPL"
+			"name": "REUs/&#8203;Internships, featuring JPL",
+			"sessions": [1, 2, 3]
+		}
+	},
+	"careerBreakouts": {
+		"jpl": {
+			"name": "Is JPL for me?"
+		},
+		"pgs": {
+			"name": "Is physics grad school for me?"
+		},
+		"npgs": {
+			"name": "Is non-physics grad school for me?"
+		},
+		"teacher": {
+			"name": "Is K-12 teaching for me?"
+		},
+		"industry": {
+			"name": "Is industry for me?"
+		},
+		"professor": {
+			"name": "Is a career as a professor for me?"
 		}
 	},
 	"schedule": [
@@ -40,14 +69,14 @@
 			"scollege": "Harvey Mudd",
 			"events": [
 				{
-					"name": "Lunch",
-					"sname": "lunch",
-					"types": ["food"],
-					"timeStart": "1:00 PM",
-					"timeEnd": "3:00 PM",
+					"name": "APS Skills Workshop",
+					"sname": "apsskills",
+					"types": ["misc"],
+					"timeStart": "2:00 PM",
+					"timeEnd": "4:00 PM",
 					"required": false,
 					"place": "TBD",
-					"shortDesc": "Lunch will be provided by food place. Need to RSVP? Optional lunch, next meal would be dinner."
+					"shortDesc": ""
 				},
 				{
 					"name": "Check-In",
@@ -87,7 +116,7 @@
 					"timeStart": "5:00 PM",
 					"timeEnd": "6:30 PM",
 					"required": true,
-					"place": "Galileo/McAlester Auditorium",
+					"place": "Galileo-McAlister Auditorium",
 					"speaker": "TBD",
 					"speakerHome": "APS",
 					"shortDesc": "Mary Sue will deliver a warm welcome to all CUWiP participants and kick off events at Harvey Mudd College. The talk will introduce the theme topic location etc. of the conference."
@@ -223,7 +252,7 @@
 					"timeEnd": "10:30 AM",
 					"required": true,
 					"place": "Smith Campus Center/Millikan Hall",
-					"options": ["ppe1", "sj", "sf", "outreach", "cc", "jpl"],
+					"options": true,
 					"shortDesc": ""
 				},
 				{
@@ -321,13 +350,13 @@
 					"timeEnd": "4:30 PM",
 					"required": true,
 					"place": "Smith Campus Center/Millikan Hall",
-					"options": ["ppe1", "ppe2", "sf", "outreach", "wip", "jpl"],
+					"options": true,
 					"shortDesc": ""
 				},
 				{
 					"name": "Coffee Break",
 					"sname": "coffee",
-					"types": ["food", "free"	],
+					"types": ["food", "free"],
 					"timeStart": "4:30 PM",
 					"timeEnd": "5:00 PM",
 					"required": true,
@@ -342,7 +371,7 @@
 					"timeEnd": "5:45 PM",
 					"place": "Smith Campus Center/Millikan Hall",
 					"required": true,
-					"options": ["ppe1", "ppe2", "is", "sf", "wip", "jpl"],
+					"options": true,
 					"shortDesc": ""
 				},
 				{
@@ -449,12 +478,13 @@
 					"shortDesc": ""
 				},
 				{
-					"name": "Career Fair",
+					"name": "Career Fair/Breakout Sessions",
 					"sname": "careerfair",
-					"types": ["misc"],
+					"types": ["breakout", "misc"],
 					"timeStart": "10:00 AM",
 					"timeEnd": "12:00 PM",
 					"required": true,
+					"options": true,
 					"place": "Ursa Major",
 					"shortDesc": ""
 				},
