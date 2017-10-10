@@ -362,7 +362,8 @@ $event-attrs: (
 						}
 					}
 				}
-				.desc {
+				&.breakout .desc,
+				&.talk .desc {
 					@include respond-to('xlarge') {
 						order: 2;
 						padding-left: 3%;
@@ -373,7 +374,7 @@ $event-attrs: (
 						padding-left: 0;
 						padding-right: 5%;
 					}
-					@include respond-to('at500') {
+					@include respond-to('at600') {
 						padding-right: 0;
 						width: 100%;
 					}
@@ -382,7 +383,7 @@ $event-attrs: (
 						font-size: 1em;
 						margin: 1.5em 0 1em;
 						em {
-							@include respond-to('at500') {
+							@include respond-to('at600') {
 								display: block;
 							}
 							color: $grey-medium;
@@ -394,8 +395,21 @@ $event-attrs: (
 						@include respond-to('at1000') {
 							margin: 1em 0;
 						}
-						@include respond-to('at500') {
+						@include respond-to('at600') {
 							margin: 1em 0 0;
+						}
+					}
+				}
+				&.misc .desc {
+					p {
+						@include respond-to('xlarge') {
+							margin: 0 9.5em 0 5.4em;
+						}
+						@include respond-to('at1000') {
+							margin: 1em 22% 0.5em 7.35%;
+						}
+						@include respond-to('at600') {
+							margin-right: 2em;
 						}
 					}
 				}
@@ -403,10 +417,11 @@ $event-attrs: (
 					@include respond-to('xlarge') {
 						display: none;
 					}
-					@include respond-to('at500') {
+					@include respond-to('at600') {
 						display: block;
 						float: left;
 						margin-right: 1.5em;
+						max-width: 125px;
 						shape-outside: circle(50%);
 						width: 30%;
 					}
@@ -422,7 +437,7 @@ $event-attrs: (
 					@include respond-to('at1000') {
 						order: 2;
 					}
-					@include respond-to('at500') {
+					@include respond-to('at600') {
 						display: none;
 					}
 					align-items: center;
