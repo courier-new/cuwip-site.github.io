@@ -67,20 +67,46 @@ $event-attrs: (
 		display: flex;
 		flex-direction: column;
 		> .event {
+			@include respond-to('xlarge') {
+				padding: 1.5em 0;
+			}
+			@include respond-to('at1000') {
+				padding: 1em 0;
+			}
 			align-items: center;
+			background: rgba(#fff, 0.6);
+			box-shadow: 1px 1px 4px rgba($grey-medium, 0.1);
 			display: flex;
 			flex-wrap: wrap;
-			margin: 0.7em 0;
+			margin: 0.3em 0;
+			transition: all linear 0.2s;
 			width: 100%;
+			&.expandable:hover {
+				background: #fff;
+				box-shadow: 1px 1px 4px rgba($grey-medium, 0.3);
+				cursor: pointer;
+			}
+			&.expandable.expanded {
+				background: #fff;
+				padding-top: 1.4em;
+				.about {
+					opacity: 1;
+				}
+				.expandable.arrow {
+					color: $turquoise;
+					padding: 0 0 0 3px;
+					transform: rotate(90deg);
+				}
+			}
 			.type.bubbles {
 				@include respond-to('xlarge') {
 					width: 10%;
 				}
-				@include respond-to('at1000') {
-					width: 15%;
+				@include respond-to('at600') {
+					width: 14%;
 				}
-				@include respond-to('at400') {
-					width: 26%;
+				@include respond-to('at500') {
+					width: 20%;
 				}
 				text-align: center;
 				position: relative;
@@ -133,35 +159,65 @@ $event-attrs: (
 					}
 				}
 			}
+			.expandable.arrow {
+				@include respond-to('xlarge') {
+					color: rgba($grey-light, 0.6);
+					text-align: center;
+					width: 10%;
+				}
+				@include respond-to('at600') {
+					width: 10%;
+				}
+				@include respond-to('at500') {
+					color: rgba($grey-light, 0.5);
+					font-size: 1.5em;
+					width: 20%;
+				}
+				@include respond-to('at330') {
+					width: 12%;
+				}
+				order: 3;
+				padding: 2px 0 0;
+				position: relative;
+				transition: all linear 0.4s;
+			}
 			.info {
 				@include respond-to('xlarge') {
-					width: 90%;
+					grid-template-areas: 'name time place';
+					grid-template-columns: 1fr 0.9fr 1fr;
+					width: 80%;
 				}
 				@include respond-to('at1000') {
-					width: 85%;
+					grid-template-areas:
+						'name time'
+						'place time';
+					grid-template-columns: 2fr 1fr;
 				}
-				@include respond-to('at400') {
-					width: 74%;
+				@include respond-to('at600') {
+					grid-template-columns: 1fr 0.9fr;
+					width: 76%;
+				}
+				@include respond-to('at500') {
+					grid-template-columns: 1fr;
+					grid-template-areas:
+						'name'
+						'time'
+						'place';
+					width: 60%;
+				}
+				@include respond-to('at330') {
+					width: 68%;
 				}
 				align-items: center;
-				display: flex;
+				display: grid;
 				justify-content: space-between;
-				flex-wrap: wrap;
 				span {
 					line-height: 1.25em;
 					padding: 0.05em;
 					&.name {
-						@include respond-to('xlarge') {
-							flex-basis: 35%;
-						}
-						@include respond-to('at1000') {
-							flex-basis: 60%;
-						}
-						@include respond-to('at400') {
-							flex-basis: 100%;
-						}
 						font-size: 1.1em;
 						font-weight: 700;
+						grid-area: name;
 						.optional {
 							color: $grey-light;
 							display: inline-block;
@@ -183,31 +239,29 @@ $event-attrs: (
 					}
 					&.time {
 						@include respond-to('xlarge') {
-							flex-basis: 30%;
 							text-align: center;
 						}
 						@include respond-to('at1000') {
-							flex-basis: 40%;
+							text-align: right;
 						}
-						@include respond-to('at400') {
-							flex-basis: 100%;
+						@include respond-to('at600') {
+							margin-left: 5px;
+						}
+						@include respond-to('at500') {
+							margin-left: 0;
 							text-align: left;
 						}
+						grid-area: time;
 					}
 					&.place {
-						@include respond-to('xlarge') {
-							flex-basis: 35%;
-						}
-						@include respond-to('at1000') {
-							flex-basis: 100%;
-						}
+						grid-area: place;
 					}
 				}
 			}
 			.about {
 				@include respond-to('xlarge') {
-					margin: 0;
-					padding: 1.5em 5% 1.5em 3%;
+					margin: 0 10%;
+					padding: 1.5em 0 0;
 					width: 100%;
 				}
 				@include respond-to('at1000') {
@@ -221,15 +275,149 @@ $event-attrs: (
 					padding: 0 5% 0 7%;
 					width: 97%;
 				}
-				display: flex;
-				flex-wrap: wrap;
-				&.breakout {
+				display: none;
+				opacity: 0;
+				order: 4;
+				transition: opacity linear 1.5s;
+				&.talk .inside.grid {
+					@include respond-to('xlarge') {
+						grid-template-areas:
+							'img         desc'
+							'img-header  desc'
+							'img-caption desc'
+							'.           desc';
+						grid-template-columns: minmax(170px, 1fr) 1.9fr;
+						grid-template-rows: repeat(3, min-content);
+					}
+					@include respond-to('at1000') {
+						grid-template-areas:
+							'img  img-header'
+							'img  img-caption'
+							'desc desc';
+						grid-template-columns: minmax(120px, 1fr) 3fr;
+					}
+					@include respond-to('at500') {
+						grid-template-areas:
+							'img'
+							'img-header'
+							'img-caption'
+							'desc';
+						grid-template-columns: 100%;
+					}
+					display: grid;
+					grid-gap: 5%;
+					.desc {
+						grid-area: desc;
+					}
+					.img {
+						grid-area: img;
+					}
+					.img-header {
+						grid-area: img-header;
+					}
+					.img-caption {
+						grid-area: img-caption;
+					}
+				}
+				&.talk {
+					.desc p {
+						@include respond-to('at500') {
+							margin: 1.5em 0;
+						}
+					}
+					.img-header {
+						@include respond-to('xlarge') {
+							align-items: center;
+							flex-direction: column;
+							font-size: 0.95em;
+							justify-content: center;
+							margin: 1.4em 0 1em;
+							text-align: center;
+						}
+						@include respond-to('at1000') {
+							align-items: flex-end;
+							flex-direction: row;
+							justify-content: flex-end;
+							text-align: right;
+						}
+						@include respond-to('at500') {
+							align-items: flex-end;
+							flex-direction: row;
+							font-size: 0.9em;
+							justify-content: center;
+							text-align: center;
+						}
+						display: flex;
+						h2 {
+							color: map-get($event-attrs, talk);
+							margin: 0;
+						}
+						span {
+							@include respond-to('xlarge') {
+								margin: 0.15em 0.25em;
+								text-align: center;
+							}
+							@include respond-to('at1000') {
+								text-align: right;
+							}
+							@include respond-to('at500') {
+								text-align: center;
+							}
+							display: inline-block;
+						}
+					}
+					.img-caption {
+						@include respond-to('xlarge') {
+							justify-content: center;
+							font-size: 1.1em;
+						}
+						@include respond-to('at1000') {
+							justify-content: flex-end;
+						}
+						@include respond-to('at500') {
+							justify-content: center;
+							font-size: 1em;
+						}
+						display: flex;
+						font-style: italic;
+						letter-spacing: 0.12em;
+					}
+					.img {
+						@include respond-to('xlarge') {
+							justify-content: center;
+						}
+						@include respond-to('at1000') {
+							justify-content: flex-start;
+						}
+						@include respond-to('at500') {
+							justify-content: center;
+						}
+						display: flex;
+						img {
+							@include respond-to('xlarge') {
+								margin: 1em 0 0;
+								max-height: 170px;
+								max-width: 170px;
+							}
+							@include respond-to('at1000') {
+								max-height: 120px;
+								max-width: 120px;
+							}
+							@include respond-to('at500') {
+								margin-top: 1.6em;
+							}
+							border-radius: 50%;
+							width: 100%;
+						}
+					}
+				}
+				&.breakout:not(.misc) {
 					ul {
 						@include respond-to('xlarge') {
 							padding-left: 3%;
 						}
 						@include respond-to('at1000') {
-							padding-right: 4.2%;
+							padding-top: 1em;
 						}
 						@include respond-to('at500') {
 							padding-left: 7%;
@@ -239,45 +427,8 @@ $event-attrs: (
 						grid-template-columns: 100%;
 						grid-gap: 0 5%;
 						margin: 0;
-						padding-top: 1em;
+						padding-bottom: 1.5em;
 						width: 100%;
-					}
-					&:not(.misc) li {
-						align-items: center;
-						display: flex;
-						list-style: none;
-						margin: 0;
-						padding: 0.3em 0;
-					}
-					&.misc ul {
-						@include respond-to('xlarge') {
-							grid-auto-flow: column dense;
-							grid-template-columns: 47.5% 47.5%;
-							grid-template-rows: repeat(3, auto);
-							padding-left: 7.4%;
-						}
-						@include respond-to('at1000') {
-							grid-template-columns: 100%;
-							grid-template-rows: repeat(6, auto);
-						}
-						@include respond-to('at500') {
-							padding-left: 11%;
-						}
-						@include respond-to('at400') {
-							padding-left: 5%;
-						}
-						@include respond-to('at330') {
-							padding-left: 0;
-						}
-						li {
-							display: inline-block;
-							span.session,
-							span.label {
-								@include respond-to('xlarge') {
-									width: 100%;
-								}
-							}
-						}
 					}
 					li {
 						@include respond-to('xlarge') {
@@ -286,6 +437,11 @@ $event-attrs: (
 						@include respond-to('at500') {
 							min-height: 2.8em;
 						}
+						align-items: center;
+						display: flex;
+						list-style: none;
+						margin: 0;
+						padding: 0.3em 0;
 						span {
 							font-size: 1em;
 							font-weight: 400;
@@ -341,8 +497,8 @@ $event-attrs: (
 								width: 21px;
 							}
 							align-items: center;
-							background-color: #fff;
-							border: 3px solid #fff;
+							background-color: $grey-lightest;
+							border: 3px solid $grey-lightest;
 							border-radius: 50%;
 							display: flex;
 							font-size: 1.2em;
@@ -357,96 +513,52 @@ $event-attrs: (
 								color: darken($grey-lightest, 10%);
 							}
 							&.true {
-								color: saturate($green-lime, 20);
+								color: saturate($green-grass-light, 20);
 							}
 						}
 					}
-				}
-				&.breakout .desc,
-				&.talk .desc {
-					@include respond-to('xlarge') {
-						order: 2;
-						padding-left: 3%;
-						width: 77%;
-					}
-					@include respond-to('at1000') {
-						order: 1;
-						padding-left: 0;
-						padding-right: 5%;
-					}
-					@include respond-to('at600') {
-						padding-right: 0;
-						width: 100%;
-					}
-					h2 {
-						color: map-get($event-attrs, talk);
-						font-size: 1em;
-						margin: 1.5em 0 1em;
-						em {
-							@include respond-to('at600') {
-								display: block;
-							}
-							color: $grey-medium;
-							font-weight: normal;
-							text-transform: none;
-						}
-					}
-					p {
-						@include respond-to('at1000') {
-							margin: 1em 0;
-						}
-						@include respond-to('at600') {
-							margin: 1em 0 0;
-						}
-					}
-				}
-				&.misc .desc {
-					p {
+					.desc {
 						@include respond-to('xlarge') {
-							margin: 0 9.5em 0 5.4em;
+							order: 2;
+							margin-right: 10%;
+							padding-left: 3%;
+							width: 65%;
 						}
 						@include respond-to('at1000') {
-							margin: 1em 22% 0.5em 7.35%;
+							order: 1;
+							padding-left: 0;
+							padding-right: 5%;
 						}
 						@include respond-to('at600') {
-							margin-right: 2em;
+							padding-right: 0;
+							width: 100%;
+						}
+						h2 {
+							color: map-get($event-attrs, talk);
+							font-size: 1em;
+							margin: 1.5em 0 1em;
+							em {
+								@include respond-to('at600') {
+									display: block;
+								}
+								color: $grey-medium;
+								font-weight: normal;
+								text-transform: none;
+							}
+						}
+						p {
+							@include respond-to('at1000') {
+								margin: 1em 0;
+							}
+							@include respond-to('at600') {
+								margin: 1em 0 0;
+							}
 						}
 					}
 				}
-				.lil-img {
-					@include respond-to('xlarge') {
-						display: none;
-					}
-					@include respond-to('at600') {
-						display: block;
-						float: left;
-						margin-right: 1.5em;
-						max-width: 125px;
-						shape-outside: circle(50%);
-						width: 30%;
-					}
-					img {
-						border-radius: 50%;
-					}
-				}
-				.big-img {
-					@include respond-to('xlarge') {
-						order: 1;
-						width: 23%;
-					}
-					@include respond-to('at1000') {
-						order: 2;
-					}
-					@include respond-to('at600') {
-						display: none;
-					}
-					align-items: center;
-					display: flex;
-					justify-content: center;
-					img {
-						border-radius: 50%;
-						max-height: 110px;
-						max-width: 110px;
+				&.misc {
+					li {
+						min-height: 1.8em;
 					}
 				}
 			}
