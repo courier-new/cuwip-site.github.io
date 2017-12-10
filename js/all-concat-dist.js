@@ -8,7 +8,7 @@ var applyOpen = '1 September 2017 00:00:00 EDT',
     applyClose = '13 October 2017 23:59:00 EDT',
     registerOpen = '6 November 2017 00:00:00 PST',
     registerClose = '17 November 2017 23:59:00 PST',
-    startOfCUWiP = '12 January 2018 18:00:00 PDT',
+    startOfCUWiP = '12 January 2018 14:00:00 PST',
     travelClose = '21 January 2018 23:59:00 PST';
 
 // Store events Array
@@ -395,6 +395,57 @@ if ($('nav.agenda').length) {
         }
     };
 
+    // Function to open event card if it is now
+    var openCurrentEvent = function openCurrentEvent() {
+        // Only run on agenda page
+        if ($('.agenda.spread').length) {
+            // Wait until agenda data has populated the DOM
+            if (!$('.agenda.spread .day.block').length) {
+                setTimeout(function () {
+                    openCurrentEvent();
+                }, 200);
+            } else {
+                // Compute seconds from midnight January 1st 1970 to current time, unless test date is specified
+                var now = testDate ? testDate : new Date();
+                // Get all event cards
+                var $events = $('.agenda.spread .day.block .event');
+                // For each event, check if it is currently happening
+                $events.each(function (index, event) {
+                    var dateRange = getDateRangeForEvent(event);
+                    if (now > dateRange.start && now < dateRange.end) {
+                        // Open event card
+                        openCard($(event));
+                    }
+                });
+            }
+        }
+    };
+
+    // Function for getting js Date objects describing the duration of an event
+    var getDateRangeForEvent = function getDateRangeForEvent(event) {
+        // Get the day, start, and end time for the event
+        var day = $(event).closest('.day.block').find('h1').html(),
+            times = $(event).find('span.time').html().split(' - '),
+            start = times[0],
+            end = times[1];
+        var dateRange = { start: 0, end: 0 };
+        // Generate Date objects for event's start and end time
+        switch (day) {
+            case 'Friday':
+                dateRange.start = new Date('January 12, 2018 ' + start);
+                dateRange.end = new Date('January 12, 2018 ' + end);
+                break;
+            case 'Saturday':
+                dateRange.start = new Date('January 13, 2018 ' + start);
+                dateRange.end = new Date('January 13, 2018 ' + end);
+                break;
+            default:
+                dateRange.start = new Date('January 14, 2018 ' + start);
+                dateRange.end = new Date('January 14, 2018 ' + end);
+        }
+        return dateRange;
+    };
+
     // Function for populating the whole agenda via data read in from json
     var addAgenda = function addAgenda() {
         var agendaContent = "";
@@ -420,6 +471,8 @@ if ($('nav.agenda').length) {
             addSubnav();
             // Add events legend
             addLegend();
+            // Open current event
+            openCurrentEvent();
         }
     };
 
@@ -434,7 +487,7 @@ if ($('nav.agenda').length) {
         // For each event in the day
         $(day.events).each(function (i, eventObj) {
             // Add event to the agenda
-            daySection += addEvent(eventObj);
+            daySection += addEvent(eventObj, day.scollege);
         });
         daySection += "<!--end day table--></div>\n";
         // Add separator except on last day
@@ -444,7 +497,7 @@ if ($('nav.agenda').length) {
     };
 
     // Adds an event card to a day
-    var addEvent = function addEvent(event) {
+    var addEvent = function addEvent(event, campus) {
         // Determine if event has extra description for expandable info section
         var hasExpandable = !event.debugHide && (event.shortDesc.length || event.options);
         // Add event card
@@ -455,6 +508,7 @@ if ($('nav.agenda').length) {
         // Add expandable section with additional details for event
         eventCard += addExpandedInfo({
             'event': event,
+            'campus': campus,
             'isTalk': event.types.includes("talk"),
             'isBreakout': event.types.includes("breakout"),
             'shouldBeHidden': event.debugHide || false,
@@ -496,6 +550,7 @@ if ($('nav.agenda').length) {
     // Adds expandable section with additional details for an event
     var addExpandedInfo = function addExpandedInfo(_ref2) {
         var event = _ref2['event'],
+            campus = _ref2['campus'],
             isTalk = _ref2['isTalk'],
             isBreakout = _ref2['isBreakout'],
             shouldBeHidden = _ref2['shouldBeHidden'],
@@ -506,16 +561,21 @@ if ($('nav.agenda').length) {
             return "";
         } else {
             // Add desc/options element, if event is talk or breakout session
-            var expandedInfo = "";
+            var expandedInfo = '<div class=\'about ' + event.types.join(' ') + '\'>\n';
             if (isTalk && !shouldBeHidden) {
                 expandedInfo += addTalkDesc(event);
             } else if (isBreakout && !shouldBeHidden) {
                 expandedInfo += addBreakoutOptions(event);
             } else if (!shouldBeHidden) {
-                expandedInfo += '<div class=\'about ' + event.types[0] + '\'>\n<div class=\'inside grid\'>\n<div class=\'desc\'>\n';
+                expandedInfo += '<div class=\'inside grid\'>\n<div class=\'desc\'>\n';
                 expandedInfo += event.shortDesc.length ? '<p>' + event.shortDesc + '</p>\n' : '<p>No details currently available for this event.</p>';
-                expandedInfo += '<!--end desc--></div>\n<!--end inside grid--></div>\n<!-- end about--></div>';
+                expandedInfo += '<!--end desc--></div>\n<!--end inside grid--></div>\n';
             }
+            expandedInfo += addMap({
+                'event': event,
+                'campus': campus
+            });
+            expandedInfo += "<!-- end about--></div>";
             return expandedInfo;
         }
     };
@@ -525,8 +585,8 @@ if ($('nav.agenda').length) {
         if (!event.speaker || event.speaker === "TBD" || event.debugHide) {
             return component;
         } else {
-            // Add extra info container
-            component += '<div class=\'about ' + event.types[0] + '\'>\n<div class=\'inside grid\'>\n';
+            // Add inner grid container
+            component += '<div class=\'inside grid\'>\n';
             // Add speaker image
             component += '<div class=\'img\'><img src=\'../img/' + event.speakerImg + '\'></div>\n';
             // Add speaker name
@@ -535,7 +595,7 @@ if ($('nav.agenda').length) {
             component += '<div class=\'img-caption\'>' + event.speakerHome + '</div>\n';
             // Add event description and link to speaker page
             component += '<div class=\'desc\'>\n<p>' + event.shortDesc + '</p>\n<p>Visit her <a target=\'_blank\' href=\'' + event.speakerPage.URL + '\'>' + event.speakerPage.type + '</a> to learn more.</p>\n</div>\n';
-            component += '<!--end inside grid--></div>\n<!--end about--></div>\n';
+            component += '<!--end inside grid--></div>\n';
             return component;
         }
     };
@@ -547,13 +607,8 @@ if ($('nav.agenda').length) {
         } else if (event.name.match(/breakout session \d of \d/i)) {
             // Remember current breakout session number by extracting from session name (i.e. "Breakout Session 1 of 3" => 1)
             var snum = parseInt(event.name.match(/\d of \d/)[0].substr(0, 1));
-            // Label container with event types
-            component += "<div class='about ";
-            for (var t = 0; t < event.types.length; t++) {
-                component += event.types[t];
-                component += t + 1 === event.types.length ? "" : " ";
-            }
-            component += "'>\n<div class='inside grid'>\n<ul>\n";
+            // Add inner grid container
+            component += "<div class='inside grid'>\n<ul>\n";
             for (var id in progData.breakouts) {
                 // Store current breakout session data
                 var s = progData.breakouts[id];
@@ -576,16 +631,11 @@ if ($('nav.agenda').length) {
                 }
                 component += "</li>\n";
             }
-            component += "</ul>\n</div>\n</div>\n";
+            component += "</ul>\n</div>\n";
             return component;
         } else if (event.name.match(/career/i)) {
-            // Label container with event types
-            component += "<div class='about ";
-            for (var _t = 0; _t < event.types.length; _t++) {
-                component += event.types[_t];
-                component += _t + 1 === event.types.length ? "" : " ";
-            }
-            component += "'>\n<div class='inside grid'>\n<ul>\n";
+            // Add inner grid container
+            component += "<div class='inside grid'>\n<ul>\n";
             for (var _id in progData.careerBreakouts) {
                 // Store current breakout session data
                 var _s = progData.careerBreakouts[_id];
@@ -593,7 +643,7 @@ if ($('nav.agenda').length) {
                 component += '<li>\n<div class=\'details\'><span class=\'session\'>' + _s.name + '</span>';
                 component += "</li>\n";
             }
-            component += "</ul>\n</div>\n</div>\n";
+            component += "</ul>\n</div>\n";
             return component;
         }
     };
@@ -644,16 +694,21 @@ if ($('nav.agenda').length) {
         }
     });
 
+    // Function to open event card details
+    var openCard = function openCard(card) {
+        if (card.hasClass('expanded')) {
+            card.removeClass('expanded');
+            card.find('.about').slideUp();
+        } else if (card.hasClass('expandable')) {
+            card.addClass('expanded');
+            card.find('.about').slideDown();
+        }
+    };
+
     // Clicking agenda event will open event's details
     $('.agenda.spread').on('click', '.event', function (e) {
-        var $eventItem = $(e.target).closest('.event');
-        if ($eventItem.hasClass('expanded')) {
-            $eventItem.removeClass('expanded');
-            $eventItem.find('.about').slideUp();
-        } else if ($eventItem.hasClass('expandable')) {
-            $eventItem.addClass('expanded');
-            $eventItem.find('.about').slideDown();
-        }
+        var $eventCard = $(e.target).closest('.event');
+        openCard($eventCard);
     });
 }
 
@@ -679,24 +734,31 @@ if ($countdown.length) {
 	var formatSwitch = 'on';
 
 	var countdown = function countdown(t) {
-		//let getFutureFormattedDate();
-		// Compute seconds from since midnight January 1st 1970 to event time
-		var eventTime = Date.parse(t.date) / 1e3;
-		// Compute seconds from since midnight January 1st 1970 to current time
-		var currentTime = Math.floor(new Date().getTime() / 1e3);
+		// Parse event time
+		var eventTime = Date.parse(t.date);
+		// Get current time, unless test date is specified
+		var currentTime = testDate ? testDate : new Date();
+
+		var days = void 0,
+		    hours = void 0,
+		    minutes = void 0,
+		    seconds = void 0;
 
 		// If event has arrived
 		if (eventTime <= currentTime) {
-			// (End behavior)
-			console.log('event has arrived!');
+			// End behavior
+			days = 0;
+			hours = 0;
+			minutes = 0;
+			seconds = 0;
 		} else {
 			// Compute seconds between now and event time
-			var seconds = eventTime - currentTime;
-			var days = Math.floor(seconds / 86400);
+			seconds = Math.floor((eventTime - currentTime) / 1e3);
+			days = Math.floor(seconds / 86400);
 			seconds -= days * 60 * 60 * 24;
-			var hours = Math.floor(seconds / 3600);
+			hours = Math.floor(seconds / 3600);
 			seconds -= hours * 60 * 60;
-			var minutes = Math.floor(seconds / 60);
+			minutes = Math.floor(seconds / 60);
 			seconds -= minutes * 60;
 
 			// If formatting is on, utilize at least two digits for every countdown value, adding a leading zero if the computed value is only one digit
@@ -706,13 +768,13 @@ if ($countdown.length) {
 				minutes = String(minutes).length >= 2 ? minutes : '0' + minutes;
 				seconds = String(seconds).length >= 2 ? seconds : '0' + seconds;
 			}
-
-			// Fill countdown blocks with computed and formatted values
-			$countdown.find('.number.of.days').text(days);
-			$countdown.find('.number.of.hours').text(hours);
-			$countdown.find('.number.of.minutes').text(minutes);
-			$countdown.find('.number.of.seconds').text(seconds);
 		}
+
+		// Fill countdown blocks with computed and formatted values
+		$countdown.find('.number.of.days').text(days);
+		$countdown.find('.number.of.hours').text(hours);
+		$countdown.find('.number.of.minutes').text(minutes);
+		$countdown.find('.number.of.seconds').text(seconds);
 	};
 
 	// Call initial setting of countdown
@@ -758,14 +820,14 @@ $.getJSON('/js/comp/apply.min.json', function (data) {
 
 function getTimeUntil(t, readable) {
 	readable = readable || false;
-	// Compute seconds from since midnight January 1st 1970 to input time
-	var endTime = Date.parse(t) / 1e3;
-	// Compute seconds from since midnight January 1st 1970 to current time, unless test date is specified
-	var currentTime = testDate ? testDate : Math.floor(new Date().getTime() / 1e3);
+	// Parse date
+	var endTime = Date.parse(t);
+	// Get current time, unless test date is specified
+	var currentTime = testDate ? testDate : new Date();
 	// Compute seconds between now and event time
 	var seconds = void 0,
 	    result = void 0;
-	seconds = result = endTime - currentTime;
+	seconds = result = (endTime - currentTime) / 1e3;
 	if (readable) {
 		var days = Math.floor(seconds / 86400);
 		if (days >= 2) {
@@ -892,7 +954,7 @@ function addAppInfo() {
 		// If test date was used
 		if (testDate) {
 			// Print it
-			console.log("test date used: " + testDate);
+			console.log('using testdate ' + testDate);
 			// Highlight elements that have been changed
 			$(elements).each(function () {
 				$(this).addClass('highlight');
@@ -982,6 +1044,39 @@ $('.device.word').each(function () {
 	}
 	$(this).html(word);
 });
+"use strict";
+
+/**
+ * maps.js
+ *
+ * Controls rendering and interaction with maps around agenda and faq
+ *
+ * @author    Kelli Rockwell <kellirockwell@mail.com>
+ * @since     File available since December 10th, 2017
+ * @version   1.0.0
+ */
+
+var pomMap = "../img/pom-map-2000.jpg",
+    hmcMap = "../img/hmc-map-2000.jpg",
+    cppMap = "../img/cpp-map-2000.jpg";
+
+var addMap = function addMap(_ref) {
+    var event = _ref['event'],
+        campus = _ref['campus'];
+
+    var mapbg = void 0;
+    switch (campus) {
+        case "Pomona":
+            mapbg = pomMap;
+            break;
+        case "Harvey Mudd":
+            mapbg = hmcMap;
+            break;
+        default:
+            mapbg = cppMap;
+    }
+    return "<div class='map'></div>";
+};
 'use strict';
 
 /**
@@ -1011,6 +1106,7 @@ $('.page.footer').on('dblclick', function () {
 $('.page.footer').on('click', '.test.date.trigger', function () {
 	if (!$('.test.date.module').length) {
 		console.log('opening test date module');
+		console.log('current time is ' + new Date());
 		var module = "<div class='module container'>\n<div class='test date module'>\n<div class='text'>\n";
 		module += "<div class='input bar'><input type='text'></input><div class='go button'>Try</div><div class='reset button'>Reset</div></div>\n";
 		module += "<div class='instruction'>Recommended input format is<strong>17 November 2017 23:59:00 PST</strong></div>\n</div>\n</div>\n</div>";
@@ -1025,7 +1121,7 @@ $('.page.footer').on('click', '.test.date.trigger', function () {
 // Apply new test date on click of go button
 $('body').on('click', '.test.date.module .go.button', function () {
 	// Try to parse date
-	var input = Date.parse($('.test.date.module input').val()) / 1e3;
+	var input = Date.parse($('.test.date.module input').val());
 	if (!input) {
 		console.log('could not parse date from input');
 	}
@@ -1033,6 +1129,7 @@ $('body').on('click', '.test.date.module .go.button', function () {
 	testDate = input;
 	addAppInfo();
 	highlightCurrentPeriod();
+	openCurrentEvent();
 });
 
 // Reset to current date on click of reset button
@@ -1077,7 +1174,7 @@ document.onkeydown = function (e) {
 	// If module is present and keypress of enter
 	if ($('.test.date.module').length && isEnter) {
 		// Try to parse date
-		var input = Date.parse($('.test.date.module input').val()) / 1e3;
+		var input = new Date(Date.parse($('.test.date.module input').val()));
 		if (!input) {
 			console.log('could not parse date from input');
 		}

@@ -34,6 +34,57 @@ if ($('nav.agenda').length) {
         }
     };
 
+    // Function to open event card if it is now
+    const openCurrentEvent = () => {
+        // Only run on agenda page
+        if ($('.agenda.spread').length) {
+            // Wait until agenda data has populated the DOM
+        	if (!$('.agenda.spread .day.block').length) {
+        		setTimeout(() => {
+        			openCurrentEvent();
+        		}, 200);
+        	} else {
+                // Compute seconds from midnight January 1st 1970 to current time, unless test date is specified
+                const now = testDate ? testDate : new Date();
+                // Get all event cards
+                const $events = $('.agenda.spread .day.block .event');
+                // For each event, check if it is currently happening
+                $events.each((index, event) => {
+                    const dateRange = getDateRangeForEvent(event);
+                    if (now > dateRange.start && now < dateRange.end) {
+                        // Open event card
+                        openCard($(event));
+                    }
+                });
+            }
+        }
+    };
+
+    // Function for getting js Date objects describing the duration of an event
+    const getDateRangeForEvent = (event) => {
+        // Get the day, start, and end time for the event
+        const day = $(event).closest('.day.block').find('h1').html(),
+              times = $(event).find('span.time').html().split(' - '),
+              start = times[0],
+              end = times[1];
+        let dateRange = {start: 0, end: 0};
+        // Generate Date objects for event's start and end time
+        switch(day) {
+            case 'Friday' :
+                dateRange.start = new Date(`January 12, 2018 ${start}`);
+                dateRange.end = new Date(`January 12, 2018 ${end}`);
+                break;
+            case 'Saturday' :
+                dateRange.start = new Date(`January 13, 2018 ${start}`);
+                dateRange.end = new Date(`January 13, 2018 ${end}`);
+                break;
+            default:
+                dateRange.start = new Date(`January 14, 2018 ${start}`);
+                dateRange.end = new Date(`January 14, 2018 ${end}`);
+        }
+        return dateRange;
+    };
+
     // Function for populating the whole agenda via data read in from json
     const addAgenda = () => {
     	let agendaContent = "";
@@ -59,6 +110,8 @@ if ($('nav.agenda').length) {
             addSubnav();
             // Add events legend
     	    addLegend();
+            // Open current event
+            openCurrentEvent();
     	}
     };
 
@@ -77,7 +130,7 @@ if ($('nav.agenda').length) {
         // For each event in the day
         $(day.events).each((i, eventObj) => {
             // Add event to the agenda
-            daySection += addEvent(eventObj);
+            daySection += addEvent(eventObj, day.scollege);
         });
         daySection += "<!--end day table--></div>\n";
         // Add separator except on last day
@@ -87,7 +140,7 @@ if ($('nav.agenda').length) {
     };
 
     // Adds an event card to a day
-    const addEvent = (event) => {
+    const addEvent = (event, campus) => {
         // Determine if event has extra description for expandable info section
         const hasExpandable = !event.debugHide && (event.shortDesc.length || event.options);
         // Add event card
@@ -98,6 +151,7 @@ if ($('nav.agenda').length) {
         // Add expandable section with additional details for event
         eventCard += addExpandedInfo({
             'event': event,
+            'campus': campus,
             'isTalk': event.types.includes("talk"),
             'isBreakout': event.types.includes("breakout"),
             'shouldBeHidden': event.debugHide || false,
@@ -139,6 +193,7 @@ if ($('nav.agenda').length) {
     // Adds expandable section with additional details for an event
     const addExpandedInfo = ({
         'event': event,
+        'campus': campus,
         'isTalk': isTalk,
         'isBreakout': isBreakout,
         'shouldBeHidden': shouldBeHidden,
@@ -149,16 +204,21 @@ if ($('nav.agenda').length) {
             return "";
         } else {
             // Add desc/options element, if event is talk or breakout session
-            let expandedInfo = "";
+            let expandedInfo = `<div class='about ${event.types.join(' ')}'>\n`;
             if (isTalk && !shouldBeHidden) {
                 expandedInfo += addTalkDesc(event);
             } else if (isBreakout && !shouldBeHidden) {
                 expandedInfo += addBreakoutOptions(event);
             } else if (!shouldBeHidden) {
-                expandedInfo += `<div class='about ${event.types[0]}'>\n<div class='inside grid'>\n<div class='desc'>\n`;
+                expandedInfo += `<div class='inside grid'>\n<div class='desc'>\n`;
                 expandedInfo += (event.shortDesc.length) ? `<p>${event.shortDesc}</p>\n` : `<p>No details currently available for this event.</p>`;
-                expandedInfo += `<!--end desc--></div>\n<!--end inside grid--></div>\n<!-- end about--></div>`;
+                expandedInfo += `<!--end desc--></div>\n<!--end inside grid--></div>\n`;
             }
+            expandedInfo += addMap({
+                'event': event,
+                'campus': campus
+            });
+            expandedInfo += "<!-- end about--></div>";
             return expandedInfo;
         }
     };
@@ -168,8 +228,8 @@ if ($('nav.agenda').length) {
     	if (!event.speaker || event.speaker === "TBD" || event.debugHide) {
     		return component;
     	} else {
-            // Add extra info container
-    		component += `<div class='about ${event.types[0]}'>\n<div class='inside grid'>\n`;
+            // Add inner grid container
+    		component += `<div class='inside grid'>\n`;
             // Add speaker image
             component += `<div class='img'><img src='../img/${event.speakerImg}'></div>\n`;
             // Add speaker name
@@ -178,7 +238,7 @@ if ($('nav.agenda').length) {
     		component += `<div class='img-caption'>${event.speakerHome}</div>\n`;
             // Add event description and link to speaker page
     		component += `<div class='desc'>\n<p>${event.shortDesc}</p>\n<p>Visit her <a target='_blank' href='${event.speakerPage.URL}'>${event.speakerPage.type}</a> to learn more.</p>\n</div>\n`;
-            component += `<!--end inside grid--></div>\n<!--end about--></div>\n`;
+            component += `<!--end inside grid--></div>\n`;
     		return component;
     	}
     };
@@ -190,13 +250,8 @@ if ($('nav.agenda').length) {
        } else if (event.name.match(/breakout session \d of \d/i)) {
           // Remember current breakout session number by extracting from session name (i.e. "Breakout Session 1 of 3" => 1)
           let snum = parseInt(event.name.match(/\d of \d/)[0].substr(0, 1));
-    		// Label container with event types
-          component += "<div class='about ";
-          for (let t = 0; t < event.types.length; t++) {
-             component += event.types[t];
-             component += (t + 1 === event.types.length) ? "" : " ";
-          }
-          component += "'>\n<div class='inside grid'>\n<ul>\n";
+          // Add inner grid container
+          component += "<div class='inside grid'>\n<ul>\n";
           for (let id in progData.breakouts) {
              // Store current breakout session data
              let s = progData.breakouts[id];
@@ -219,16 +274,11 @@ if ($('nav.agenda').length) {
              }
        		component += "</li>\n";
           }
-    		component += "</ul>\n</div>\n</div>\n";
+    		component += "</ul>\n</div>\n";
     		return component;
     	} else if (event.name.match(/career/i)) {
-          // Label container with event types
-          component += "<div class='about ";
-          for (let t = 0; t < event.types.length; t++) {
-             component += event.types[t];
-             component += (t + 1 === event.types.length) ? "" : " ";
-          }
-          component += "'>\n<div class='inside grid'>\n<ul>\n";
+          // Add inner grid container
+          component += "<div class='inside grid'>\n<ul>\n";
           for (let id in progData.careerBreakouts) {
              // Store current breakout session data
              let s = progData.careerBreakouts[id];
@@ -236,7 +286,7 @@ if ($('nav.agenda').length) {
              component += `<li>\n<div class='details'><span class='session'>${s.name}</span>`;
        		component += "</li>\n";
           }
-    		component += "</ul>\n</div>\n</div>\n";
+    		component += "</ul>\n</div>\n";
     		return component;
        }
     };
@@ -287,16 +337,21 @@ if ($('nav.agenda').length) {
        }
     });
 
+    // Function to open event card details
+    const openCard = (card) => {
+        if (card.hasClass('expanded')) {
+            card.removeClass('expanded');
+            card.find('.about').slideUp();
+        } else if (card.hasClass('expandable')) {
+            card.addClass('expanded');
+            card.find('.about').slideDown();
+        }
+    };
+
     // Clicking agenda event will open event's details
     $('.agenda.spread').on('click', '.event', (e) => {
-        let $eventItem = $(e.target).closest('.event');
-       if ($eventItem.hasClass('expanded')) {
-           $eventItem.removeClass('expanded');
-           $eventItem.find('.about').slideUp();
-       } else if ($eventItem.hasClass('expandable')) {
-           $eventItem.addClass('expanded');
-           $eventItem.find('.about').slideDown();
-       }
+        let $eventCard = $(e.target).closest('.event');
+        openCard($eventCard);
     });
 }
 

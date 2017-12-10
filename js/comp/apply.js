@@ -23,13 +23,13 @@ $.getJSON('/js/comp/apply.min.json', function(data) {
 
 function getTimeUntil(t, readable) {
 	readable = readable || false;
-	// Compute seconds from since midnight January 1st 1970 to input time
-	let endTime = Date.parse(t) / 1e3;
-	// Compute seconds from since midnight January 1st 1970 to current time, unless test date is specified
-	let currentTime = (testDate) ? testDate : Math.floor(new Date().getTime() / 1e3);
+	// Parse date
+	let endTime = Date.parse(t);
+	// Get current time, unless test date is specified
+	let currentTime = (testDate) ? testDate : new Date();
 	// Compute seconds between now and event time
 	let seconds, result;
-	seconds = result = endTime - currentTime;
+	seconds = result = (endTime - currentTime) / 1e3;
 	if (readable) {
 		let days = Math.floor(seconds / 86400);
 		if (days >= 2) {
@@ -149,7 +149,7 @@ function addAppInfo() {
 		// If test date was used
 		if (testDate) {
 			// Print it
-			console.log("test date used: " + testDate);
+			console.log(`using testdate ${testDate}`);
 			// Highlight elements that have been changed
 			$(elements).each(function() {
 				$(this).addClass('highlight');
